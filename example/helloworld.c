@@ -46,7 +46,6 @@ static struct config cfg = {
     .port = 1883,
     .options = {
         .keep_alive = 30,
-        .client_id = "libumqtt-Test",
         .clean_session = true,
         .username = "test",
         .password = "123456"
@@ -151,6 +150,7 @@ static void usage(const char *prog)
         "      -h host      # Default is 'localhost'\n"
         "      -p port      # Default is 1883\n"
         "      -c file      # Load CA certificates from file\n"
+        "      -i ClientId  # Default is 'libumqtt-Test\n"
         "      -n           # don't validate the server's certificate\n"
         "      -s           # Use ssl\n"
         "      -a           # Auto reconnect to the server\n"
@@ -161,9 +161,8 @@ static void usage(const char *prog)
 int main(int argc, char **argv)
 {
     int opt;
-    struct umqtt_client *cl = NULL;
 
-    while ((opt = getopt(argc, argv, "h:p:nc:sa")) != -1) {
+    while ((opt = getopt(argc, argv, "h:i:p:nc:sa")) != -1) {
         switch (opt)
         {
         case 'h':
@@ -184,10 +183,16 @@ int main(int argc, char **argv)
         case 'a':
             cfg.auto_reconnect = true;
             break;
+        case 'i':
+            cfg.options.client_id = optarg;
+            break;
         default: /* '?' */
             usage(argv[0]);
         }
     }
+
+    if (!cfg.options.client_id)
+        cfg.options.client_id = "libumqtt-Test";
 
     ULOG_INFO("libumqttc version %s\n", UMQTT_VERSION_STRING);
 
