@@ -240,10 +240,10 @@ static void on_publish(struct umqtt_client *cl, struct umqtt_message *msg)
 		return;
 
 	lua_newtable(u->L);
-	
+
 	lua_pushinteger(u->L, msg->mid);
 	lua_setfield(u->L, -2, "mid");
-	
+
 	lua_pushinteger(u->L, msg->dup);
 	lua_setfield(u->L, -2, "dup");
 
@@ -299,11 +299,11 @@ static void client_set_options(lua_State *L, struct umqtt_t *u)
 	u->L = L;
 	u->host = strdup(lua_tcheck_string(L, 1, "host"));
 	u->port = lua_topt_int(L, 1, "port", 1883);
-	
+
 	lua_getfield(L, 1, "ssl");
 	if (lua_istable(L, -1)) {
 		u->ssl_enable = true;
-		u->ssl_crt_file = strdup(lua_tcheck_string(L, -1, "cert_file"));
+		u->ssl_crt_file = strdup(lua_topt_string(L, -1, "cert_file", NULL));
 		u->ssl_verify = lua_topt_bool(L, -1, "verify", true);
 	}
 	lua_pop(L, 1);
@@ -410,7 +410,7 @@ static void on_close(struct umqtt_client *cl)
 	lua_rawgeti(u->L, LUA_REGISTRYINDEX, u->on_close_cb);
 	if (!lua_isfunction(u->L, -1))
 		return;
-	
+
 	client_try_reconnect(u);
 	lua_pushboolean(u->L, u->reconnect_interval > 0 ? true : false);
 	lua_call(u->L, 1, 0);
@@ -513,7 +513,7 @@ static int umqtt_lua_on_close(lua_State *L)
 	struct umqtt_t *u = luaL_checkudata(L, 1, METANAME);
 
 	if (!lua_isfunction(L, 2))
-		return luaL_argerror(L, 2, "provide callback function");	
+		return luaL_argerror(L, 2, "provide callback function");
 
 	u->on_close_cb = luaL_ref(L, LUA_REGISTRYINDEX);
 	return 0;
